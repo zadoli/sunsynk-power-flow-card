@@ -2768,40 +2768,28 @@ export class SunsynkPowerFlowCard extends LitElement {
 		let template: TemplateResult | null = null;
 		let variantKey: 'full' | 'compact' | undefined;
 
-		// Resolve load name entities: if loadN_name_entity is set, use the entity's state as the name
-		const resolveLoadName = (nameEntity: string | undefined, fallback: string): string => {
-			if (nameEntity && nameEntity !== '' && nameEntity !== 'none') {
-				const state = this.hass?.states?.[nameEntity]?.state;
+		// loadN_name doubles as either a literal label or an entity id (same pattern as loadN_icon):
+		// if the value resolves to a known entity, that entity's state is used as the name.
+		const resolveLoadName = (value: string): string => {
+			if (value && value !== 'none') {
+				const state = this.hass?.states?.[value]?.state;
 				if (state !== undefined && state !== 'unavailable' && state !== 'unknown') {
+					this._trackedEntityIds.add(value);
 					return state;
 				}
 			}
-			return fallback;
+			return value;
 		};
 
 		const resolvedLoad = config.load ? {
 			...config.load,
-			load1_name: resolveLoadName(config.load.load1_name_entity, config.load.load1_name),
-			load2_name: resolveLoadName(config.load.load2_name_entity, config.load.load2_name),
-			load3_name: resolveLoadName(config.load.load3_name_entity, config.load.load3_name),
-			load4_name: resolveLoadName(config.load.load4_name_entity, config.load.load4_name),
-			load5_name: resolveLoadName(config.load.load5_name_entity, config.load.load5_name),
-			load6_name: resolveLoadName(config.load.load6_name_entity, config.load.load6_name),
+			load1_name: resolveLoadName(config.load.load1_name),
+			load2_name: resolveLoadName(config.load.load2_name),
+			load3_name: resolveLoadName(config.load.load3_name),
+			load4_name: resolveLoadName(config.load.load4_name),
+			load5_name: resolveLoadName(config.load.load5_name),
+			load6_name: resolveLoadName(config.load.load6_name),
 		} : config.load;
-
-		// Track load name entities for re-render on state change
-		[
-			config.load?.load1_name_entity,
-			config.load?.load2_name_entity,
-			config.load?.load3_name_entity,
-			config.load?.load4_name_entity,
-			config.load?.load5_name_entity,
-			config.load?.load6_name_entity,
-		].forEach((entityId) => {
-			if (entityId && entityId !== '' && entityId !== 'none') {
-				this._trackedEntityIds.add(entityId);
-			}
-		});
 
 		const configWithResolvedLoad = resolvedLoad !== config.load
 			? { ...config, load: resolvedLoad }
