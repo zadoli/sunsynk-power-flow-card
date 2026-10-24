@@ -14,7 +14,10 @@ const plugins = [
     extensions: ['.mjs', '.js', '.json', '.node', '.ts'],
   }),
   commonjs(),
-  typescript(),
+  typescript({
+    include: ['**/*.ts', '**/*.tsx'],
+    exclude: ['**/*.d.ts'],
+  }),
   json(),
   babel({
     exclude: 'node_modules/**',
